@@ -33,7 +33,7 @@ model Twit {
   id  String @id @default(cuid())
 
   title String
-  text  String
+  content  String
   likes Int @default(0)
 
   user User @relation(fields: [userId], references: [id])

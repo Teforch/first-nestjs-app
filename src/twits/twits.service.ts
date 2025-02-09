@@ -50,7 +50,7 @@ export class TwitsService {
     return this.db.twit.create({
       data: {
         title: dto.title,
-        text: dto.text,
+        content: dto.content,
         userId
       },
       include: includeFields
@@ -71,7 +71,7 @@ export class TwitsService {
       where: { id },
       data: {
         title: dto.title,
-        text: dto.text
+        content: dto.content
       }
     });
   }

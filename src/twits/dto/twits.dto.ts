@@ -9,5 +9,5 @@ export class TwitDto {
   @IsString()
   @MinLength(5)
   @MaxLength(280)
-  text: string;
+  content: string;
 }
