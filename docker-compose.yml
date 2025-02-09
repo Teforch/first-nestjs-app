@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: nest_app
+    restart: always
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASS}@db:5432/${DB_NAME}
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app # <== теперь код в контейнере обновляется при изменениях
+      - /app/node_modules # <== исключаем node_modules, чтобы не было конфликтов
+    command: sh -c "npx prisma db push && npm run start:dev" # <== Включаем автообновление (NestJS `--watch`)
+
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5433:5432" # Внешний порт 5433 -> Внутренний 5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
