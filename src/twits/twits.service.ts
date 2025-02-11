@@ -6,6 +6,7 @@ import {
 import { DatabaseService } from '../database/database.service';
 import { TwitDto } from './dto/twits.dto';
 import { Prisma } from '@prisma/client';
+import { RedisService } from '../redis/redis.service';
 
 const includeFields: Prisma.TwitInclude = {
   user: {
@@ -17,23 +18,30 @@ const includeFields: Prisma.TwitInclude = {
 
 @Injectable()
 export class TwitsService {
-  constructor(private db: DatabaseService) {}
+  constructor(
+    private db: DatabaseService,
+    private cacheManager: RedisService
+  ) {}
 
   async getTwits() {
-    return this.db.twit.findMany({
+    const cacheKey = 'twits';
+    const cachedTwits = await this.cacheManager.get(cacheKey);
+    if (cachedTwits) return cachedTwits;
+
+    const twits = await this.db.twit.findMany({
       include: includeFields,
-      orderBy: [
-        {
-          likes: 'desc'
-        },
-        {
-          createdAt: 'desc'
-        }
-      ]
+      orderBy: [{ likes: 'desc' }, { createdAt: 'desc' }]
     });
+
+    await this.cacheManager.set(cacheKey, twits, 10);
+    return twits;
   }
 
   async getTwitById(id: string) {
+    const cacheKey = `twit:${id}`;
+    const cachedTwit = await this.cacheManager.get(cacheKey);
+    if (cachedTwit) return cachedTwit;
+
     const twit = await this.db.twit.findUnique({
       include: includeFields,
       where: {
@@ -43,11 +51,12 @@ export class TwitsService {
 
     if (!twit) throw new NotFoundException('Twit not found');
 
+    await this.cacheManager.set(cacheKey, twit, 10);
     return twit;
   }
 
   async createTwit(dto: TwitDto, userId: string) {
-    return this.db.twit.create({
+    const twit = this.db.twit.create({
       data: {
         title: dto.title,
         content: dto.content,
@@ -55,6 +64,9 @@ export class TwitsService {
       },
       include: includeFields
     });
+
+    await this.cacheManager.del('twits');
+    return twit;
   }
 
   async updateTwit(dto: TwitDto, id: string, userId: string) {
@@ -66,6 +78,8 @@ export class TwitsService {
     if (!twit) throw new NotFoundException('Twit not found');
     if (twit.userId !== userId)
       throw new UnauthorizedException('You are not the owner of this twit');
+
+    await this.cacheManager.del('twits');
 
     return this.db.twit.update({
       where: { id },
@@ -87,6 +101,7 @@ export class TwitsService {
       throw new UnauthorizedException('You are not the owner of this twit');
 
     await this.db.twit.delete({ where: { id } });
+    await this.cacheManager.del('twits');
 
     return { message: 'Twit deleted successfully' };
   }
