@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { TwitsModule } from './twits/twits.module';
 import { RedisModule } from './redis/redis.module';
+import { CommentsModule } from './comments/comments.module';
 
 @Module({
   imports: [
@@ -11,7 +12,8 @@ import { RedisModule } from './redis/redis.module';
     AuthModule,
     ConfigModule.forRoot(),
     TwitsModule,
-    RedisModule
+    RedisModule,
+    CommentsModule
   ],
   controllers: [],
   providers: []

@@ -8,6 +8,8 @@ import { TwitDto } from './dto/twits.dto';
 import { Prisma } from '@prisma/client';
 import { RedisService } from '../redis/redis.service';
 
+const CACHE_TTL = Number(process.env.CACHE_TTL) || 10; // in seconds
+
 const includeFields: Prisma.TwitInclude = {
   user: {
     select: {
@@ -33,7 +35,7 @@ export class TwitsService {
       orderBy: [{ likes: 'desc' }, { createdAt: 'desc' }]
     });
 
-    await this.cacheManager.set(cacheKey, twits, 10);
+    await this.cacheManager.set(cacheKey, twits, CACHE_TTL);
     return twits;
   }
 
@@ -43,7 +45,17 @@ export class TwitsService {
     if (cachedTwit) return cachedTwit;
 
     const twit = await this.db.twit.findUnique({
-      include: includeFields,
+      include: {
+        ...includeFields,
+        comments: {
+          select: {
+            content: true,
+            likes: true,
+            createdAt: true,
+            user: { select: { username: true } }
+          }
+        }
+      },
       where: {
         id
       }
@@ -51,7 +63,7 @@ export class TwitsService {
 
     if (!twit) throw new NotFoundException('Twit not found');
 
-    await this.cacheManager.set(cacheKey, twit, 10);
+    await this.cacheManager.set(cacheKey, twit, CACHE_TTL);
     return twit;
   }
 
@@ -70,14 +82,7 @@ export class TwitsService {
   }
 
   async updateTwit(dto: TwitDto, id: string, userId: string) {
-    const twit = await this.db.twit.findUnique({
-      where: { id },
-      select: { userId: true }
-    });
-
-    if (!twit) throw new NotFoundException('Twit not found');
-    if (twit.userId !== userId)
-      throw new UnauthorizedException('You are not the owner of this twit');
+    await this.validateTwitActions(id, userId);
 
     await this.cacheManager.del('twits');
 
@@ -91,6 +96,15 @@ export class TwitsService {
   }
 
   async deleteTwit(id: string, userId: string) {
+    await this.validateTwitActions(id, userId);
+
+    await this.db.twit.delete({ where: { id } });
+    await this.cacheManager.del('twits');
+
+    return { message: 'Twit deleted successfully' };
+  }
+
+  private async validateTwitActions(id: string, userId: string) {
     const twit = await this.db.twit.findUnique({
       where: { id },
       select: { userId: true }
@@ -100,9 +114,6 @@ export class TwitsService {
     if (twit.userId !== userId)
       throw new UnauthorizedException('You are not the owner of this twit');
 
-    await this.db.twit.delete({ where: { id } });
-    await this.cacheManager.del('twits');
-
-    return { message: 'Twit deleted successfully' };
+    return;
   }
 }
