@@ -11,8 +11,8 @@ import {
 } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CommentDto } from './dto/comment.dto';
-import { CurrentUser } from '../auth/decorators/user.decorator';
-import { Auth } from '../auth/decorators/auth.decorator';
+import { CurrentUser } from '../utils/decorators/user.decorator';
+import { Auth } from '../utils/decorators/auth.decorator';
 
 @Controller('comments')
 export class CommentsController {

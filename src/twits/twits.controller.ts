@@ -11,8 +11,8 @@ import {
   ValidationPipe
 } from '@nestjs/common';
 import { TwitsService } from './twits.service';
-import { Auth } from '../auth/decorators/auth.decorator';
-import { CurrentUser } from '../auth/decorators/user.decorator';
+import { Auth } from '../utils/decorators/auth.decorator';
+import { CurrentUser } from '../utils/decorators/user.decorator';
 import { TwitDto } from './dto/twits.dto';
 
 @Controller('twits')
