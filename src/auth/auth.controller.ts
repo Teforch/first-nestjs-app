@@ -10,7 +10,7 @@ import { AuthService } from './auth.service';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { CreateDto } from './dto/create.dto';
 import { AuthDto } from './dto/auth.dto';
-import { Auth } from '../utils/decorators/auth.decorator';
+import { Auth } from '../shared/decorators/auth.decorator';
 
 @Controller('auth')
 export class AuthController {
