@@ -14,12 +14,12 @@ import { AuthDto } from './dto/auth.dto';
 @Injectable()
 export class AuthService {
   constructor(
-    private db: DatabaseService,
-    private jwt: JwtService
+    private readonly db: DatabaseService,
+    private readonly jwt: JwtService
   ) {}
 
   async register(dto: CreateDto) {
-    const existingUser = await this.db.user.findFirst({
+    const existingUser: User | null = await this.db.user.findFirst({
       where: {
         OR: [{ email: dto.email }, { username: dto.username }]
       }

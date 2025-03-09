@@ -33,7 +33,6 @@ model User {
 model Twit {
   id  String @id @default(cuid())
 
-  title String
   content  String
   likes Int @default(0)
 

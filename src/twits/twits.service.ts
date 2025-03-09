@@ -30,10 +30,12 @@ export class TwitsService {
     const cachedTwits = await this.cacheManager.get(cacheKey);
     if (cachedTwits) return cachedTwits;
 
-    const twits = await this.db.twit.findMany({
-      include: includeFields,
-      orderBy: [{ likes: 'desc' }, { createdAt: 'desc' }]
-    });
+    const twits = (
+      await this.db.twit.findMany({
+        include: { ...includeFields, comments: true },
+        orderBy: [{ likes: 'desc' }, { createdAt: 'desc' }]
+      })
+    ).map((twit) => ({ ...twit, commentsCount: twit.comments.length }));
 
     await this.cacheManager.set(cacheKey, twits, CACHE_TTL);
     return twits;
@@ -49,6 +51,7 @@ export class TwitsService {
         ...includeFields,
         comments: {
           select: {
+            id: true,
             content: true,
             likes: true,
             createdAt: true,
@@ -63,14 +66,14 @@ export class TwitsService {
 
     if (!twit) throw new NotFoundException('Twit not found');
 
-    await this.cacheManager.set(cacheKey, twit, CACHE_TTL);
-    return twit;
+    const twitWithCommentsCount = { ...twit, commentsCount: twit.comments.length };
+    await this.cacheManager.set(cacheKey, twitWithCommentsCount, CACHE_TTL);
+    return twitWithCommentsCount;
   }
 
   async createTwit(dto: TwitDto, userId: string) {
     const twit = this.db.twit.create({
       data: {
-        title: dto.title,
         content: dto.content,
         userId
       },
@@ -89,7 +92,6 @@ export class TwitsService {
     return this.db.twit.update({
       where: { id },
       data: {
-        title: dto.title,
         content: dto.content
       }
     });
