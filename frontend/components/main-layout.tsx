@@ -51,7 +51,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       {/* Sidebar */}
       <div className="w-64 border-r border-border p-4 flex flex-col">
         <div className="text-2xl font-bold mb-8">
-          <Link href="/">Twitter Clone</Link>
+          <Link href="/">Teforch Twitter</Link>
         </div>
 
         <nav className="space-y-2 flex-1">
