@@ -1,42 +1,43 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { MainLayout } from "@/components/main-layout"
-import { CreateTwit } from "@/components/create-twit"
-import { TwitCard } from "@/components/twit-card"
-import { type Twit, getTwits } from "@/lib/api"
-import { getTokens } from "@/lib/auth"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { MainLayout } from "@/components/main-layout";
+import { CreateTwit } from "@/components/create-twit";
+import { TwitCard } from "@/components/twit-card";
+import { type Twit, getTwits } from "@/lib/api";
+import { getTokens } from "@/lib/auth";
 
 export default function HomePage() {
-  const router = useRouter()
-  const [twits, setTwits] = useState<Twit[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
+  console.log("Hi");
+  const router = useRouter();
+  const [twits, setTwits] = useState<Twit[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   useEffect(() => {
-    const tokens = getTokens()
-    setIsLoggedIn(!!tokens)
-  }, [])
+    const tokens = getTokens();
+    setIsLoggedIn(!!tokens);
+  }, []);
 
   const fetchTwits = async () => {
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
     try {
-      const data = await getTwits()
-      setTwits(data)
+      const data = await getTwits();
+      setTwits(data);
     } catch (err) {
-      setError("Failed to load tweets. Please try again.")
-      console.error(err)
+      setError("Failed to load tweets. Please try again.");
+      console.error(err);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchTwits()
-  }, [])
+    fetchTwits();
+  }, []);
 
   return (
     <MainLayout>
@@ -45,7 +46,9 @@ export default function HomePage() {
       {!isLoggedIn && (
         <div className="bg-muted/30 rounded-lg p-4 mb-6 text-center">
           <h2 className="text-lg font-medium mb-2">Join the conversation</h2>
-          <p className="text-muted-foreground mb-4">Sign in to post tweets and join the conversation.</p>
+          <p className="text-muted-foreground mb-4">
+            Sign in to post tweets and join the conversation.
+          </p>
           <div className="flex justify-center gap-4">
             <button
               onClick={() => router.push("/auth/login")}
@@ -70,12 +73,17 @@ export default function HomePage() {
       ) : error ? (
         <div className="p-4 text-center text-destructive">
           {error}
-          <button onClick={fetchTwits} className="block mx-auto mt-2 text-primary hover:underline">
+          <button
+            onClick={fetchTwits}
+            className="block mx-auto mt-2 text-primary hover:underline"
+          >
             Try again
           </button>
         </div>
       ) : twits.length === 0 ? (
-        <div className="text-center p-8 text-muted-foreground">No tweets yet. Be the first to tweet!</div>
+        <div className="text-center p-8 text-muted-foreground">
+          No tweets yet. Be the first to tweet!
+        </div>
       ) : (
         <div>
           {twits.map((twit) => (
@@ -84,6 +92,5 @@ export default function HomePage() {
         </div>
       )}
     </MainLayout>
-  )
+  );
 }
-
