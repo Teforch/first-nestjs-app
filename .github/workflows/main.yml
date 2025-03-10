@@ -1,0 +1,39 @@
+name: Deploy Pipeline
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+      
+jobs:
+  deploy_backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Deploy to Render
+        run: |
+          echo "Deploying backend to Render..."
+          # Здесь добавьте команду для деплоя на Render
+          # Например: render deploy backend...
+
+---
+
+on:
+  push:
+    paths:
+      - 'frontend/**'
+
+jobs:
+  deploy_frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Deploy to Vercel
+        run: |
+          echo "Deploying frontend to Vercel..."
+          # Здесь добавьте команду для деплоя на Vercel
+          # Например: vercel --prod...
