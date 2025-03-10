@@ -2,11 +2,12 @@ name: Deploy Pipeline
 
 on:
   push:
-    paths:
-      - 'backend/**'
-      
+    branches:
+      - main
+
 jobs:
   deploy_backend:
+    if: contains(github.event.head_commit.message, '[backend]')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -16,17 +17,9 @@ jobs:
         run: |
           echo "Deploying backend to Render..."
           # Здесь добавьте команду для деплоя на Render
-          # Например: render deploy backend...
 
----
-
-on:
-  push:
-    paths:
-      - 'frontend/**'
-
-jobs:
   deploy_frontend:
+    if: contains(github.event.head_commit.message, '[frontend]')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -36,4 +29,3 @@ jobs:
         run: |
           echo "Deploying frontend to Vercel..."
           # Здесь добавьте команду для деплоя на Vercel
-          # Например: vercel --prod...
